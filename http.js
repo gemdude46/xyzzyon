@@ -6,7 +6,14 @@ function HTTP(m, u, c, d, f) {
         method: m,
         cookies: c,
         body: d||''
-    }), function(x){f(JSON.parse(x.responseText));});
+    }), function(x) {
+        var r = JSON.parse(x.responseText);
+        if (r.status == 'success') {
+            f(r);
+        } else if (r.status == 'fail') {
+            throw Error(r.error);
+        } else throw Error('WTF');
+    });
     
 }
 

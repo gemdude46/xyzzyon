@@ -23,7 +23,7 @@
             
             var oscrw = -1, oscrh = -1;
             
-            var svr, nn = localStorage.getItem('nn');
+            var svr, nn, JSESSIONID;
             
             function checkonresize() {
                 if (oscrw != B.offsetWidth || oscrh != B.offsetHeight) {
@@ -52,7 +52,7 @@
             function phoneInp(el) {
                 el.addEventListener('focus', function() {
                     setTimeout(function() {
-                        if (oscrw > oscrh && oscrh / Q('#cm').offsetHeight < 8)
+                        if (oscrw > oscrh && oscrh / Q('#cm').offsetHeight < 8) {
                             el.blur();
                             Q('#shit').appendContent(
                                 createElement(
@@ -75,7 +75,7 @@
                             
                             Q('#phoneInpBox').addEventListener('blur', dun);
                             Q('#phoneInpBox').addEventListener('keydown', function(e) {if (e.keyCode == 10 || e.keyCode == 13) dun();});
-                            
+                        }
                     }, 256);
                 });
             }
@@ -89,10 +89,14 @@
                 
                 B.style.background = 'linear-gradient(#aaf, white)';
                 
-                menu_main();
+                main_menu();
             };
             
-            function menu_main() {
+            function main_menu() {
+                nn = null;
+                
+                JSESSIONID = null;
+                
                 var card = createCard('black', 'Xyzzy ____');
                 card.setAttribute('id', 'titlecard');
                 
@@ -104,11 +108,11 @@
                 G.appendContent(card);
                 
                 G.appendContent(createElement('DIV', {id: 'svrls'},
-                    '<div class=svr onclick="gl_menu(\'pyx-1.pretendyoure.xyz/zy/game.jsp\')">'+
+                    '<div class=svr onclick="gl_menu(\'http://pyx-1.pretendyoure.xyz/zy/\')">'+
                         'The Biggest, Blackest Dick <br> (<span id=bbd_stats>CONNECTING</span>)</div>'+
-                    '<div class=svr onclick="gl_menu(\'pyx-2.pretendyoure.xyz/zy/game.jsp\')">'+
+                    '<div class=svr onclick="gl_menu(\'http://pyx-2.pretendyoure.xyz/zy/\')">'+
                         'A Falcon with a Box on its Head <br> (<span id=fbh_stats>CONNECTING</span>)</div>'+
-                    '<div class=svr onclick="gl_menu(\'pyx-3.pretendyoure.xyz/zy/game.jsp\')">'+
+                    '<div class=svr onclick="gl_menu(\'http://pyx-3.pretendyoure.xyz/zy/\')">'+
                         'Dickfingers <br> (<span id=df_stats>CONNECTING</span>)</div>'
                 ));
                 
@@ -142,13 +146,22 @@
                 
                 G.setContent(el);
                 
-                el = createElement('input', {type: 'text', id: 'nnbox'});
+                el = createElement('input', {type: 'text', id: 'nnbox', value: localStorage.getItem('nn')});
                 
                 phoneInp(el);
                 
                 G.appendContent(el);
                 
-                el = createElement('div', {id: 'nnplaybtn'}, '&#9654;');
+                el = createElement('div', {id: 'nnplaybtn'}, '&#9654;', [['click', function() {
+                    
+                    if (Q('#nnbox').value.match(/^(?:[a-z]|[A-Z]|_)\w{2,29}$/) == null) {
+                        alert('Your username must match /^(?:[a-z]|[A-Z]|_)\w{2,29}$/');
+                    } else {
+                        localStorage.setItem('nn', nn = Q('#nnbox').value);
+                        gl_menu();
+                    }
+                    
+                }]]);
                 
                 G.appendContent(el);
                 
@@ -163,10 +176,44 @@
                     return;
                 }
                 
-                G.setContent('');
+                GET(svr + 'game.jsp', {}, function(r) {
+                    JSESSIONID = r.cookies.JSESSIONID;
+                });
+                
+                G.setContent(
+                    [
+                        createElement(
+                            'div',
+                            {id: 'gltb'},
+                            [
+                                nn,
+                                createElement(
+                                    'div',
+                                    {id: 'glbb'},
+                                    [
+                                        createElement(
+                                            'div',
+                                            {class: 'glbbb lf'},
+                                            'Create game'
+                                        ),
+                                        createElement(
+                                            'div',
+                                            {class: 'glbbb rf'},
+                                            'Leave server',
+                                            [['click', main_menu]]
+                                        )
+                                    ]
+                                )
+                            ]
+                        ),
+                        createElement(
+                            'div',
+                            {id: 'gl'}
+                        )
+                    ]
+                );
                 
                 setUF(function() {
-                    
                 });
             }
             
@@ -192,6 +239,7 @@
                     f();
                 }, 128);
             }
+            
             
         </script>
         <style>
@@ -319,6 +367,7 @@
                 cursor: pointer;
                 transition: background-color 0.5s;
                 text-align: center;
+                font-weight: bold;
             }
             
             .svr:hover {
@@ -345,12 +394,89 @@
             #nnplaybtn {
                 position: absolute;
                 top: 9cm;
-                left: 0;
-                width: 100%;
+                left: calc(50% - 6mm);
+                width: 12mm;
                 font-size: 1cm;
                 text-align: center;
                 color: #0d0;
                 font-family: 'Helvetica', 'Arial', sans-serif;
+                cursor: pointer;
+            }
+            
+            #gltb {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 2em;
+                line-height: 2em;
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                text-align: center;
+                background: linear-gradient(white, #ddd);
+                font-weight: bold;
+            }
+            
+            #glbb {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                line-height: 1em;
+            }
+            
+            .glbbb {
+                display: inline-block;
+                border-radius: 1mm;
+                padding: 1mm;
+                margin: 1mm;
+                color: white;
+                background-color: black;
+                cursor: pointer;
+                transition: background-color 0.5s;
+            }
+            
+            .glbbb:hover {
+                background-color: #333;
+            }
+            
+            #gl {
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                overflow: auto;
+                position: absolute;
+                top: 2em;
+                left: 0;
+                width: 100%;
+                height: calc(100% - 2em);
+            }
+            
+            .game {
+                background-color: white;
+                border-radius: 2mm;
+                width: 80%;
+                max-width: 16cm;
+                height: 2cm;
+                margin: 2mm auto;
+                border: 2px solid #bbb;
+            }
+            
+            @media (max-width: 12cm) {
+                #gltb {
+                    height: 4em;
+                    line-height: 6em;
+                }
+                
+                #gl {
+                    top: 4em;
+                    height: calc(100% - 4em);
+                }
+            }
+            
+            .lf {
+                float: left;
+            }
+            
+            .rf {
+                float: right;
             }
         </style>
     </head>
