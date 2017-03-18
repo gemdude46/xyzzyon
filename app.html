@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+        <title> XyzzyOn </title>
+        <script src="+.js?x=y"></script>
+        <script src="http.js"></script>
+        <script>
+            
+            var D, B, G;
+            
+            function Q(s) {
+                return D.querySelector(s);
+            }
+            
+            function createCard(type, content) {
+                return createElement('div', {
+                    class: "card card-" + type
+                }, content);
+            }
+            
+            var cardsize = -1;
+            
+            var oscrw = -1, oscrh = -1;
+            
+            var svr, nn = localStorage.getItem('nn');
+            
+            function checkonresize() {
+                if (oscrw != B.offsetWidth || oscrh != B.offsetHeight) {
+                    oscrw = B.offsetWidth;
+                    oscrh = B.offsetHeight;
+                    
+                    onresize();
+                }
+                
+                setTimeout(checkonresize, 128);
+            }
+            
+            function onresize() {
+                var card = createCard('white', '');
+                card.style.visibility = 'hidden';
+                B.appendContent(card);
+                cardsize = card.offsetWidth;
+                B.removeChild(card);
+                
+                if (oscrw > oscrh && oscrh / Q('#cm').offsetHeight < 8)
+                    Q('#rotphone').style.visibility = 'visible';
+                else
+                    Q('#rotphone').style.visibility = 'hidden';
+            }
+            
+            function phoneInp(el) {
+                el.addEventListener('focus', function() {
+                    setTimeout(function() {
+                        if (oscrw > oscrh && oscrh / Q('#cm').offsetHeight < 8)
+                            el.blur();
+                            Q('#shit').appendContent(
+                                createElement(
+                                    'DIV',
+                                    {id: 'phoneInp'},
+                                    createElement(
+                                        'input',
+                                        {type: 'text', id: 'phoneInpBox', value: el.value}
+                                    )
+                                )
+                            );
+                            
+                            Q('#phoneInpBox').focus();
+                            Q('#phoneInpBox').setCaretPosition(el.value.length);
+                            
+                            var dun = function() {
+                                el.value = Q('#phoneInpBox').value;
+                                Q('#phoneInp').remove();
+                            };
+                            
+                            Q('#phoneInpBox').addEventListener('blur', dun);
+                            Q('#phoneInpBox').addEventListener('keydown', function(e) {if (e.keyCode == 10 || e.keyCode == 13) dun();});
+                            
+                    }, 256);
+                });
+            }
+            
+            onload = function() {
+                D = document;
+                B = D.body;
+                G = Q('#game');
+                
+                checkonresize();
+                
+                B.style.background = 'linear-gradient(#aaf, white)';
+                
+                menu_main();
+            };
+            
+            function menu_main() {
+                var card = createCard('black', 'Xyzzy ____');
+                card.setAttribute('id', 'titlecard');
+                
+                G.setContent(card);
+                
+                card = createCard('white', 'On!');
+                card.setAttribute('id', 'subtitlecard');
+                
+                G.appendContent(card);
+                
+                G.appendContent(createElement('DIV', {id: 'svrls'},
+                    '<div class=svr onclick="gl_menu(\'pyx-1.pretendyoure.xyz/zy/game.jsp\')">'+
+                        'The Biggest, Blackest Dick <br> (<span id=bbd_stats>CONNECTING</span>)</div>'+
+                    '<div class=svr onclick="gl_menu(\'pyx-2.pretendyoure.xyz/zy/game.jsp\')">'+
+                        'A Falcon with a Box on its Head <br> (<span id=fbh_stats>CONNECTING</span>)</div>'+
+                    '<div class=svr onclick="gl_menu(\'pyx-3.pretendyoure.xyz/zy/game.jsp\')">'+
+                        'Dickfingers <br> (<span id=df_stats>CONNECTING</span>)</div>'
+                ));
+                
+                setUF(function() {
+                    GET('http://www.pretendyoure.xyz/zy/', {}, function(r) {
+                        if (r.body.indexOf('<title>Pretend You\'re Xyzzy</title>') == -1) {
+                            error_menu('Since when did the PYX homepage look like this?<br><br><pre>' + r.body.asHTML() + '</pre>');
+                        }
+                        
+                        var bbdsi = r.body.indexOf('The Biggest, Blackest Dick</a>: ') + 'The Biggest, Blackest Dick</a>: '.length;
+                        var fbhsi = r.body.indexOf('with a Box on its Head</a>: ') + 'with a Box on its Head</a>: '.length;
+                        var dfsi  = r.body.indexOf('Dickfingers</a>: ') + 'Dickfingers</a>: '.length;
+                        
+                        var bbdp = parseInt(r.body.substr(bbdsi, 10));
+                        var fbhp = parseInt(r.body.substr(fbhsi, 10));
+                        var dfp  = parseInt(r.body.substr(dfsi,  10));
+                        
+                        Q('#bbd_stats').setContent(bbdp + ' players');
+                        Q('#fbh_stats').setContent(fbhp + ' players');
+                        Q('#df_stats' ).setContent(dfp  + ' players');
+                    });
+                });
+            }
+            
+            function nn_menu() {
+                var el = createCard('black', 'What\'s your name?');
+                
+                el.style.margin = '2cm auto';
+                
+                el.style.display = 'block';
+                
+                G.setContent(el);
+                
+                el = createElement('input', {type: 'text', id: 'nnbox'});
+                
+                phoneInp(el);
+                
+                G.appendContent(el);
+                
+                el = createElement('div', {id: 'nnplaybtn'}, '&#9654;');
+                
+                G.appendContent(el);
+                
+                setUF(noop);
+            }
+            
+            function gl_menu(nsvr) {
+                if (nsvr) svr = nsvr;
+                
+                if (!nn) {
+                    nn_menu();
+                    return;
+                }
+                
+                G.setContent('');
+                
+                setUF(function() {
+                    
+                });
+            }
+            
+            function error_menu(msg) {
+                B.style['background'] = 'black';
+                B.style.color = '#f00';
+                B.style['text-shadow'] = '0 0 5px #f00';
+                B.style.margin = '1em';
+                B.style.width = B.style.height = 'auto';
+                B.style['font-family'] = 'monospace';
+                B.setContent('<h1> An error occurred </h1>' + msg);
+                
+                setUF(noop);
+            }
+            
+            var uf, ufto;
+            
+            function setUF(f) {
+                if (ufto != undefined) clearTimeout(ufto);
+                
+                ufto = setTimeout(uf = function() {
+                    ufto = setTimeout(uf, 16384);
+                    f();
+                }, 128);
+            }
+            
+        </script>
+        <style>
+            
+            html, body, #shit, #game, #phoneInp {
+                margin: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
+            
+            #shit, #game, #phoneInp {
+                position: absolute;
+                top: 0;
+                left: 0;
+            }
+            
+            #phoneInp {
+                background-color: white;
+                z-index: 32760;
+            }
+            
+            #phoneInpBox {
+                width: 100%;
+            }
+            
+            #cm {
+                width: 1cm;
+                height: 1cm;
+                visibility: hidden;
+            }
+            
+            .card {
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                font-weight: bold;
+                display: inline-block;
+            }
+            
+            @media (min-width: 12cm) {
+                .card {
+                    width: 4cm;
+                    height: 4cm;
+                    border-radius: 5mm;
+                    padding: 5mm;
+                    font-size: 4mm;
+                }
+            }
+            
+            @media (max-width: 12cm) {
+                @viewport {
+                    orientation: portrait;
+                }
+                
+                .card {
+                    width: 3cm;
+                    height: 3cm;
+                    border-radius: 3.75mm;
+                    padding: 3.75mm;
+                    font-size: 3mm;
+                }
+            }
+            
+            .card-white {
+                background-color: white;
+                color: black;
+            }
+            
+            .card-black {
+                background-color: black;
+                color: white;
+            }
+            
+            #rotphone {
+                visibility: hidden;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 2em;
+                background-color: rgba(0,0,0,0.8);
+                color: white;
+                text-align: center;
+                line-height: 2em;
+                z-index: 32000;
+            }
+            
+            #titlecard {
+                position: absolute;
+                top: 1cm;
+                right: 50%;
+                transform: rotate(350deg);
+                -webkit-transform: rotate(350deg);
+                font-size: 5mm;
+            }
+            
+            #subtitlecard {
+                position: absolute;
+                top: 1cm;
+                left: 50%;
+                transform: rotate(10deg);
+                -webkit-transform: rotate(10deg);
+                font-size: 5mm;
+            }
+            
+            #svrls {
+                position: absolute;
+                top: 8cm;
+                left: calc(50% - 4cm);
+                width: 8cm;
+            }
+            
+            @media (max-width: 12cm) {
+                #svrls {
+                    top: 6cm;
+                }
+            }
+            
+            .svr {
+                background-color: black;
+                color: white;
+                border-radius: 2mm;
+                padding: 2mm;
+                font-family: 'Helvetica', 'Arial', sans-serif;
+                margin-bottom: 2mm;
+                cursor: pointer;
+                transition: background-color 0.5s;
+                text-align: center;
+            }
+            
+            .svr:hover {
+                background-color: #333;
+            }
+            
+            #nnbox {
+                position: absolute;
+                top: 8cm;
+                left: calc(50% - 4cm);
+                width: 8cm;
+                font-size: 5mm;
+            }
+            
+            @media (max-width: 12cm) {
+                #nnbox {
+                    left: calc(50% - 2.5cm);
+                    width: 5cm;
+                    font-size: 3mm;
+                    top: 7cm;
+                }
+            }
+            
+            #nnplaybtn {
+                position: absolute;
+                top: 9cm;
+                left: 0;
+                width: 100%;
+                font-size: 1cm;
+                text-align: center;
+                color: #0d0;
+                font-family: 'Helvetica', 'Arial', sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+        <div id=shit>
+            <div id=cm></div>
+            <div id=rotphone> Please rotate your phone </div>
+        </div>
+        <div id=game>
+        </div>
+    </body>
+</html>
