@@ -182,6 +182,7 @@ function AJAX(m,u,d,f){
         if(r.readyState==4) f(r);
     };
     r.send(d);
+    return r;
 }
 PLUS.AJAX = AJAX;
 
