@@ -1,4 +1,7 @@
 function HTTP(m, u, c, d, f, t) {
+    
+    if (window.errah) return;
+    
     c=c||{};
     
     return AJAX('POST', 'http://hapi.gq/httpjson', JSON.stringify({
@@ -8,6 +11,7 @@ function HTTP(m, u, c, d, f, t) {
         body: d||'',
         content_type: t||'application/x-www-form-urlencoded'
     }), function(x) {
+        //console.log(x.responseText);
         var r = JSON.parse(x.responseText);
         if (r.status == 'success') {
             f(r);

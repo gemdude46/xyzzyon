@@ -4,10 +4,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <title> XyzzyOn </title>
         <script src="+.js?x=y"></script>
-        <script src="http.js"></script>
+        <script src="http.js?h=h"></script>
         <script>
             
             var D, B, G;
+            
+            var errah = false;
             
             function Q(s) {
                 return D.querySelector(s);
@@ -30,13 +32,13 @@
                     oscrw = B.offsetWidth;
                     oscrh = B.offsetHeight;
                     
-                    onresize();
+                    fonresize();
                 }
                 
                 setTimeout(checkonresize, 128);
             }
             
-            function onresize() {
+            function fonresize() {
                 var card = createCard('white', '');
                 card.style.visibility = 'hidden';
                 B.appendContent(card);
@@ -51,32 +53,10 @@
             
             function phoneInp(el) {
                 el.addEventListener('focus', function() {
-                    setTimeout(function() {
-                        if (oscrw > oscrh && oscrh / Q('#cm').offsetHeight < 8) {
-                            el.blur();
-                            Q('#shit').appendContent(
-                                createElement(
-                                    'DIV',
-                                    {id: 'phoneInp'},
-                                    createElement(
-                                        'input',
-                                        {type: 'text', id: 'phoneInpBox', value: el.value}
-                                    )
-                                )
-                            );
-                            
-                            Q('#phoneInpBox').focus();
-                            Q('#phoneInpBox').setCaretPosition(el.value.length);
-                            
-                            var dun = function() {
-                                el.value = Q('#phoneInpBox').value;
-                                Q('#phoneInp').remove();
-                            };
-                            
-                            Q('#phoneInpBox').addEventListener('blur', dun);
-                            Q('#phoneInpBox').addEventListener('keydown', function(e) {if (e.keyCode == 10 || e.keyCode == 13) dun();});
-                        }
-                    }, 256);
+                    if (oscrh / Q('#cm').offsetHeight > 12) return;
+                    var inp = prompt('');
+                    if ('string' === typeof(inp)) el.value = inp;
+                    el.blur();
                 });
             }
             
@@ -149,16 +129,16 @@
                 
                 G.setContent(el);
                 
-                el = createElement('input', {type: 'text', id: 'nnbox', value: localStorage.getItem('nn')});
+                el = createElement('input', {type: 'text', id: 'nnbox', value: localStorage.getItem('nn') || ''});
                 
                 phoneInp(el);
                 
                 G.appendContent(el);
                 
-                el = createElement('div', {id: 'nnplaybtn'}, '&#9654;', [['click', function() {
+                el = createElement('div', {id: 'nnplaybtn'}, '&#9654;&#xFE0E;', [['click', function() {
                     
                     if (Q('#nnbox').value.match(/^(?:[a-z]|[A-Z]|_)\w{2,29}$/) == null) {
-                        alert('Your username must match /^(?:[a-z]|[A-Z]|_)\w{2,29}$/');
+                        alert('Your username must match /^(?:[a-z]|[A-Z]|_)\\w{2,29}$/');
                     } else {
                         localStorage.setItem('nn', nn = Q('#nnbox').value);
                         gl_menu();
@@ -181,45 +161,53 @@
                 
                 GET(svr + 'game.jsp', {}, function(r) {
                     JSESSIONID = r.cookies.JSESSIONID;
-                    __cfuid = r.cookies.__cfuid;
                     
-                    POST(svr + 'AjaxServlet', 'o=r&s=1&n='+nn, {JSESSIONID: JSESSIONID, nickname: nn}, function(r) {
-                        
-                        //console.log(r.body);
+                    POST(svr + 'AjaxServlet', 'o=fl&s=0', {JSESSIONID: JSESSIONID}, function(r) {
                         
                         if (JSON.parse(r.body).e) {
-                            error_menu('code: ' + JSON.parse(r.body).ec);
+                            return error_menu('[fl] code: ' + JSON.parse(r.body).ec);
                         }
                         
-                        setUF(function() {
-                            POST(svr + 'AjaxServlet', 'o=ggl&s=42', {JSESSIONID: JSESSIONID, nickname: nn}, function(r) {
-                                var j = JSON.parse(r.body);
-                                if (j.e) {
-                                    error_menu('code: ' + j.ec);
-                                }
-                                
-                                Q('#gl').setContent(j.gl.map(function(g) {
-                                    return createElement(
-                                        'div',
-                                        {class: 'game'},
-                                        [
-                                            createElement(
-                                                'div',
-                                                {class: 'gameinfo'},
-                                                g.H +"'s game"
-                                            ),
-                                            createElement(
-                                                'button',
-                                                {class: 'gamebtn'},
-                                                '&#9654'
-                                            )
-                                        ]
-                                    );
-                                }));
+                        POST(svr + 'AjaxServlet', 'o=r&s=1&n='+nn, {JSESSIONID: JSESSIONID, nickname: nn}, function(r) {
+                            
+                            console.log(r.body);
+                            
+                            if (JSON.parse(r.body).e) {
+                                return error_menu('[r] code: ' + JSON.parse(r.body).ec);
+                            }
+                            
+                            setUF(function() {
+                                POST(svr + 'AjaxServlet', 'o=ggl&s=42', {JSESSIONID: JSESSIONID, nickname: nn}, function(r) {
+                                    var j = JSON.parse(r.body);
+                                    if (j.e) {
+                                        return error_menu('[ggl] code: ' + j.ec);
+                                    }
+                                    
+                                    console.log(j.gl[0])
+                                    
+                                    Q('#gl').setContent(j.gl.map(function(g) {
+                                        return createElement(
+                                            'div',
+                                            {class: 'game'},
+                                            [
+                                                createElement(
+                                                    'div',
+                                                    {class: 'gameinfo'},
+                                                    (g.hp ? '&#128274; ' : '') + g.H +"'s game"
+                                                ),
+                                                createElement(
+                                                    'button',
+                                                    {class: 'gamebtn'},
+                                                    '&#9654;&#xFE0E;'
+                                                )
+                                            ]
+                                        );
+                                    }));
+                                });
                             });
+                            
+                            lps();
                         });
-                        
-                        lps();
                     });
                 });
                 
@@ -283,8 +271,10 @@
                     if (j.isArray) {
                         j.forEach(function(e) {
                             if (e.E == 'c') {
-                                Q('#gchatdsp').appendContent(createElement('div', {}, e.f + '&gt; ' + e.m.asHTML()));
-                                Q('#gchatdsp').scrollToBottom();
+                                //Q('#gchatdsp').appendContent(createElement('div', {}, e.f + '&gt; ' + e.m.asHTML()));
+                                //Q('#gchatdsp').scrollToBottom();
+                            } else {
+                                console.log(e.E + ': ' + JSON.stringify(e));
                             }
                         });
                     }
@@ -294,6 +284,11 @@
             }
             
             function error_menu(msg) {
+                
+                if (errah) return;
+                
+                errah = true;
+                
                 B.style['background'] = 'black';
                 B.style.color = '#f00';
                 B.style['text-shadow'] = '0 0 5px #f00';
@@ -539,6 +534,7 @@
                 display: inline-block;
                 height: 100%;
                 width: calc(100% - 2cm);
+                white-space: nowrap;
             }
             
             .gamebtn {
@@ -571,6 +567,8 @@
                 height: 8cm;
                 background-color: white;
                 border: 3px solid #888;
+                
+                display:none;
             }
             
             #gchatdsp {
